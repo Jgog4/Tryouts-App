@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚾ Minors Allstars 2026 Tryouts</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #243460;
+    --green: #2d6a4f;
+    --green-light: #40916c;
+    --red: #c1121f;
+    --gold: #f4a261;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --border: #d1dce8;
+    --text: #1a2744;
+    --muted: #6b7a99;
+    --checked-bg: #e8f5e9;
+    --checked-border: #81c784;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--navy);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .header-title { font-size: 1.2rem; font-weight: 700; flex: 1; white-space: nowrap; }
+  .header-title span { color: var(--gold); }
+
+  .coach-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .coach-input-wrap label { font-size: 0.8rem; color: #aab4cc; white-space: nowrap; }
+  .coach-input {
+    background: var(--navy-light); border: 1px solid #3d5080; color: white;
+    padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; width: 130px;
+  }
+  .coach-input:focus { outline: none; border-color: var(--gold); }
+
+  .status-badge {
+    font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+    background: rgba(255,255,255,0.1); white-space: nowrap;
+  }
+  .status-badge.live { background: rgba(76, 175, 80, 0.3); color: #81c784; }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    background: var(--navy-light);
+    color: white;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    border-bottom: 2px solid var(--gold);
+  }
+  .stat-chip {
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 0.8rem;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    white-space: nowrap;
+    flex: 1;
+  }
+  .stat-chip .num { font-size: 1.3rem; font-weight: 700; color: var(--gold); display: block; }
+
+  /* ── Controls ── */
+  .controls {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: white;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1rem; }
+  .search-input {
+    width: 100%; padding: 10px 12px 10px 34px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; background: var(--bg);
+  }
+  .search-input:focus { outline: none; border-color: var(--navy); }
+
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .pill {
+    padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    border: 1.5px solid var(--border); background: white; cursor: pointer;
+    transition: all 0.15s; color: var(--muted);
+  }
+  .pill:hover { border-color: var(--navy); color: var(--navy); }
+  .pill.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .pill.group-pill.active { background: var(--green); border-color: var(--green); }
+
+  .btn-add {
+    margin-left: auto;
+    padding: 7px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+    background: var(--green); color: white; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn-add:hover { background: var(--green-light); }
+
+  /* ── Player list ── */
+  .player-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  .group-header {
+    font-size: 0.8rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 8px 0 4px;
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .group-header .group-count { background: var(--border); color: var(--muted); border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; }
+
+  .player-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .player-card:hover { border-color: var(--navy); box-shadow: 0 2px 8px rgba(26,39,68,0.1); }
+  .player-card.checked { background: var(--checked-bg); border-color: var(--checked-border); }
+
+  .check-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; transition: all 0.15s;
+  }
+  .player-card.checked .check-circle {
+    background: var(--green); border-color: var(--green); color: white;
+  }
+
+  .player-info { flex: 1; min-width: 0; }
+  .player-name { font-weight: 600; font-size: 0.95rem; }
+  .player-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  .player-badges { display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+  .badge {
+    padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-allstars { background: #fff3cd; color: #856404; }
+  .badge-select9 { background: #d1ecf1; color: #0c5460; }
+  .badge-pitcher { background: #f8d7da; color: #721c24; }
+  .badge-catcher { background: #d4edda; color: #155724; }
+  .badge-div-majorsb { background: #e8eaf6; color: #3949ab; }
+  .badge-div-majorsa { background: #fce4ec; color: #c62828; }
+  .badge-div-minors { background: #e0f2f1; color: #00695c; }
+
+  .note-count { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+
+  .empty-state {
+    text-align: center; padding: 48px 24px; color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: flex-end;
+    z-index: 200;
+    animation: fadeIn 0.15s;
+  }
+  @media (min-width: 600px) {
+    .modal-overlay { align-items: center; justify-content: center; }
+    .modal { max-width: 520px; border-radius: 16px !important; max-height: 90vh; }
+  }
+  @keyframes fadeIn { from { opacity: 0; } }
+
+  .modal {
+    background: white; width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh; display: flex; flex-direction: column;
+    animation: slideUp 0.2s;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } }
+
+  .modal-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .modal-close {
+    margin-left: auto; background: none; border: none; font-size: 1.3rem;
+    cursor: pointer; color: var(--muted); padding: 0 4px; line-height: 1;
+    flex-shrink: 0;
+  }
+  .modal-player-name { font-size: 1.2rem; font-weight: 700; }
+  .modal-player-sub { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  .modal-body { padding: 16px 18px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  .modal-section-label {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px;
+  }
+
+  /* Check in button */
+  .btn-checkin {
+    width: 100%; padding: 11px; border-radius: 10px; font-size: 1rem; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-checkin.in { background: var(--green); color: white; }
+  .btn-checkin.in:hover { background: #236b4a; }
+  .btn-checkin.out { background: var(--bg); color: var(--navy); border: 1.5px solid var(--border); }
+  .btn-checkin.out:hover { border-color: var(--green); color: var(--green); }
+
+  /* Tryout type selector */
+  .tryout-selector { display: flex; gap: 6px; }
+  .tryout-btn {
+    flex: 1; padding: 9px 6px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+    border: 1.5px solid var(--border); background: var(--bg); cursor: pointer;
+    text-align: center; transition: all 0.15s; color: var(--muted);
+  }
+  .tryout-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .tryout-btn.selected-allstars { background: #fff3cd; border-color: #ffc107; color: #856404; }
+  .tryout-btn.selected-select9 { background: #d1ecf1; border-color: #17a2b8; color: #0c5460; }
+
+  /* Toggle switches */
+  .toggle-row { display: flex; gap: 10px; }
+  .toggle-item {
+    flex: 1; display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: var(--bg); cursor: pointer; transition: all 0.15s;
+  }
+  .toggle-item.on { background: #e8f5e9; border-color: #81c784; }
+  .toggle-item-label { font-size: 0.85rem; font-weight: 600; }
+  .toggle-switch {
+    width: 38px; height: 22px; border-radius: 11px;
+    background: #ccc; position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle-item.on .toggle-switch { background: var(--green); }
+  .toggle-switch::after {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    border-radius: 50%; background: white; top: 2px; left: 2px;
+    transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-item.on .toggle-switch::after { transform: translateX(16px); }
+
+  /* Notes */
+  .notes-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+  .note-item {
+    background: var(--bg); border-radius: 8px; padding: 8px 10px;
+    border-left: 3px solid var(--navy);
+  }
+  .note-meta { font-size: 0.72rem; color: var(--muted); margin-bottom: 3px; }
+  .note-meta strong { color: var(--navy); }
+  .note-text { font-size: 0.85rem; line-height: 1.4; }
+
+  .note-form { display: flex; flex-direction: column; gap: 8px; }
+  .note-textarea {
+    width: 100%; padding: 9px 11px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 0.88rem; resize: vertical; min-height: 70px;
+    font-family: inherit;
+  }
+  .note-textarea:focus { outline: none; border-color: var(--navy); }
+  .btn-add-note {
+    padding: 9px; border-radius: 8px; font-size: 0.88rem; font-weight: 600;
+    background: var(--navy); color: white; border: none; cursor: pointer;
+  }
+  .btn-add-note:hover { background: var(--navy-light); }
+  .btn-add-note:disabled { opacity: 0.5; cursor: default; }
+
+  /* Add Player Modal */
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  .form-input, .form-select {
+    padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 0.9rem; font-family: inherit; background: var(--bg);
+  }
+  .form-input:focus, .form-select:focus { outline: none; border-color: var(--navy); }
+  .btn-submit {
+    width: 100%; padding: 11px; border-radius: 10px; font-size: 1rem; font-weight: 700;
+    background: var(--green); color: white; border: none; cursor: pointer; margin-top: 4px;
+  }
+  .btn-submit:hover { background: #236b4a; }
+
+  /* Connection indicator */
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .dot.green { background: #4caf50; }
+  .dot.red { background: #f44336; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title">⚾ <span>Minors Allstars</span> 2026</div>
+  <div class="coach-input-wrap">
+    <label>Your name:</label>
+    <input type="text" class="coach-input" id="coachName" placeholder="Coach..." autocomplete="off">
+  </div>
+  <div class="status-badge live" id="connectionStatus">
+    <span class="dot green" id="connDot"></span>
+    <span id="connText">Connecting…</span>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat-chip"><span class="num" id="statTotal">0</span>Total</div>
+  <div class="stat-chip"><span class="num" id="statChecked">0</span>Checked In</div>
+  <div class="stat-chip"><span class="num" id="statAllStars">0</span>All Stars</div>
+  <div class="stat-chip"><span class="num" id="statSelect9">0</span>Select 9</div>
+  <div class="stat-chip"><span class="num" id="statPitchers">0</span>Pitchers</div>
+  <div class="stat-chip"><span class="num" id="statCatchers">0</span>Catchers</div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="Search player name…" autocomplete="off">
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Filter:</span>
+    <button class="pill active" data-filter="all">All</button>
+    <button class="pill" data-filter="checked">✅ Checked In</button>
+    <button class="pill" data-filter="unchecked">⏳ Not In</button>
+    <button class="pill" data-filter="pitcher">⚾ Pitchers</button>
+    <button class="pill" data-filter="catcher">🧤 Catchers</button>
+    <button class="btn-add" id="btnAddPlayer">+ Add Player</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Group:</span>
+    <button class="pill group-pill active" data-group="all">All</button>
+    <button class="pill group-pill" data-group="1">Group 1</button>
+    <button class="pill group-pill" data-group="2">Group 2</button>
+    <button class="pill group-pill" data-group="3">Group 3</button>
+    <button class="pill group-pill" data-group="4">Group 4</button>
+  </div>
+</div>
+
+<!-- Player list -->
+<div class="player-list" id="playerList"></div>
+
+<!-- Player Modal -->
+<div class="modal-overlay" id="playerModal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-player-name" id="modalName"></div>
+        <div class="modal-player-sub" id="modalSub"></div>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Check in -->
+      <div>
+        <div class="modal-section-label">Attendance</div>
+        <button class="btn-checkin out" id="btnCheckin">Check In</button>
+      </div>
+
+      <!-- Tryout type -->
+      <div>
+        <div class="modal-section-label">Trying out for…</div>
+        <div class="tryout-selector">
+          <button class="tryout-btn" data-type="allstars" id="btnAllStars">🌟 All Stars</button>
+          <button class="tryout-btn" data-type="select9" id="btnSelect9">9️⃣ Select 9 Only</button>
+          <button class="tryout-btn" data-type="" id="btnTryoutClear">— Not Set</button>
+        </div>
+      </div>
+
+      <!-- Position interest -->
+      <div>
+        <div class="modal-section-label">Position tryouts</div>
+        <div class="toggle-row">
+          <div class="toggle-item" id="togglePitcher" data-field="wants_pitcher">
+            <span class="toggle-item-label">⚾ Pitcher</span>
+            <div class="toggle-switch"></div>
+          </div>
+          <div class="toggle-item" id="toggleCatcher" data-field="wants_catcher">
+            <span class="toggle-item-label">🧤 Catcher</span>
+            <div class="toggle-switch"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <div class="modal-section-label">Coaching Notes</div>
+        <div class="notes-list" id="notesList">
+          <div style="color:var(--muted);font-size:0.85rem;">No notes yet.</div>
+        </div>
+        <div class="note-form" style="margin-top:10px;">
+          <textarea class="note-textarea" id="noteText" placeholder="Add a note…"></textarea>
+          <button class="btn-add-note" id="btnAddNote">Add Note</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add Player Modal -->
+<div class="modal-overlay" id="addPlayerModal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-player-name">Add Player</div>
+        <div class="modal-player-sub">Walk-up registration</div>
+      </div>
+      <button class="modal-close" id="addModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Player Name *</label>
+        <input type="text" class="form-input" id="newName" placeholder="First Last">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Division</label>
+        <select class="form-select" id="newDivision">
+          <option value="">— Unknown —</option>
+          <option value="Majors A">Majors A</option>
+          <option value="Majors B">Majors B</option>
+          <option value="Minors">Minors</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Group</label>
+        <select class="form-select" id="newGroup">
+          <option value="0">— Unassigned —</option>
+          <option value="1">Group 1</option>
+          <option value="2">Group 2</option>
+          <option value="3">Group 3</option>
+          <option value="4">Group 4</option>
+        </select>
+      </div>
+      <button class="btn-submit" id="btnSubmitPlayer">Add Player</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let players = [];
+let activeFilter = 'all';
+let activeGroup = 'all';
+let currentPlayerId = null;
+let ws = null;
+
+const coachNameEl = document.getElementById('coachName');
+const searchEl = document.getElementById('searchInput');
+
+// Load saved coach name
+const savedCoach = localStorage.getItem('coachName');
+if (savedCoach) coachNameEl.value = savedCoach;
+coachNameEl.addEventListener('change', () => localStorage.setItem('coachName', coachNameEl.value));
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}`);
+
+  ws.onopen = () => {
+    document.getElementById('connDot').className = 'dot green';
+    document.getElementById('connText').textContent = '● Live';
+    document.getElementById('connectionStatus').className = 'status-badge live';
+  };
+
+  ws.onclose = () => {
+    document.getElementById('connDot').className = 'dot red';
+    document.getElementById('connText').textContent = 'Reconnecting…';
+    document.getElementById('connectionStatus').className = 'status-badge';
+    setTimeout(connect, 2000);
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'init') {
+      players = msg.players;
+      renderAll();
+    } else if (msg.type === 'player_updated') {
+      const idx = players.findIndex(p => p.id === msg.player.id);
+      if (idx >= 0) {
+        players[idx] = msg.player;
+      }
+      renderAll();
+      // Update modal if open for this player
+      if (currentPlayerId === msg.player.id) {
+        openModal(msg.player.id);
+      }
+    } else if (msg.type === 'player_added') {
+      players.push(msg.player);
+      renderAll();
+    } else if (msg.type === 'note_added') {
+      const p = players.find(p => p.id === msg.player_id);
+      if (p) {
+        if (!p.notes) p.notes = [];
+        p.notes.push(msg.note);
+        if (currentPlayerId === msg.player_id) renderNotes(p.notes);
+        renderAll();
+      }
+    } else if (msg.type === 'coaches_online') {
+      document.getElementById('connText').textContent = `● Live · ${msg.count} coach${msg.count !== 1 ? 'es' : ''}`;
+    }
+  };
+}
+
+connect();
+
+// ── Filter / Search ───────────────────────────────────────────────────────────
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderAll();
+  });
+});
+
+document.querySelectorAll('[data-group]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-group]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeGroup = btn.dataset.group;
+    renderAll();
+  });
+});
+
+searchEl.addEventListener('input', renderAll);
+
+function getFiltered() {
+  const q = searchEl.value.trim().toLowerCase();
+  return players.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q)) return false;
+    if (activeGroup !== 'all' && String(p.group_num) !== activeGroup) return false;
+    if (activeFilter === 'checked' && !p.checked_in) return false;
+    if (activeFilter === 'unchecked' && p.checked_in) return false;
+    if (activeFilter === 'pitcher' && !p.wants_pitcher) return false;
+    if (activeFilter === 'catcher' && !p.wants_catcher) return false;
+    return true;
+  });
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotal').textContent = players.length;
+  document.getElementById('statChecked').textContent = players.filter(p => p.checked_in).length;
+  document.getElementById('statAllStars').textContent = players.filter(p => p.tryout_type === 'allstars').length;
+  document.getElementById('statSelect9').textContent = players.filter(p => p.tryout_type === 'select9').length;
+  document.getElementById('statPitchers').textContent = players.filter(p => p.wants_pitcher).length;
+  document.getElementById('statCatchers').textContent = players.filter(p => p.wants_catcher).length;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function divClass(div) {
+  if (div === 'Majors A') return 'badge-div-majorsa';
+  if (div === 'Majors B') return 'badge-div-majorsb';
+  return 'badge-div-minors';
+}
+
+function renderAll() {
+  updateStats();
+  const filtered = getFiltered();
+  const list = document.getElementById('playerList');
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">⚾</div>No players match your filters.</div>`;
+    return;
+  }
+
+  // Group by group_num
+  const showGroups = activeGroup === 'all' && searchEl.value.trim() === '';
+  const grouped = {};
+  for (const p of filtered) {
+    const g = p.group_num || 0;
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(p);
+  }
+
+  const keys = Object.keys(grouped).sort((a, b) => Number(a) - Number(b));
+  let html = '';
+
+  for (const g of keys) {
+    const group = grouped[g];
+    if (showGroups) {
+      const checkedInGroup = group.filter(p => p.checked_in).length;
+      html += `<div class="group-header">
+        ${g === '0' ? 'Unassigned' : `Group ${g}`}
+        <span class="group-count">${checkedInGroup}/${group.length} in</span>
+      </div>`;
+    }
+    for (const p of group) {
+      const battingStr = p.batting_avg != null
+        ? `.${String(Math.round(p.batting_avg * 1000)).padStart(3,'0')} / ${p.plate_appearances} PA`
+        : 'No batting stats';
+      const noteCount = (p.notes || []).length;
+      const badges = [];
+      if (p.division) badges.push(`<span class="badge ${divClass(p.division)}">${p.division}</span>`);
+      if (p.tryout_type === 'allstars') badges.push(`<span class="badge badge-allstars">🌟 All Stars</span>`);
+      if (p.tryout_type === 'select9') badges.push(`<span class="badge badge-select9">9️⃣ Select 9</span>`);
+      if (p.wants_pitcher) badges.push(`<span class="badge badge-pitcher">⚾ Pitcher</span>`);
+      if (p.wants_catcher) badges.push(`<span class="badge badge-catcher">🧤 Catcher</span>`);
+
+      html += `
+        <div class="player-card ${p.checked_in ? 'checked' : ''}" data-id="${p.id}">
+          <div class="check-circle">${p.checked_in ? '✓' : ''}</div>
+          <div class="player-info">
+            <div class="player-name">${p.name}</div>
+            <div class="player-meta">${battingStr}</div>
+          </div>
+          <div class="player-badges">
+            ${badges.join('')}
+            ${noteCount > 0 ? `<span class="note-count">📝 ${noteCount}</span>` : ''}
+          </div>
+        </div>`;
+    }
+  }
+
+  list.innerHTML = html;
+
+  // Attach click handlers
+  list.querySelectorAll('.player-card').forEach(card => {
+    card.addEventListener('click', () => openModal(parseInt(card.dataset.id)));
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(playerId) {
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  currentPlayerId = playerId;
+
+  document.getElementById('modalName').textContent = p.name;
+  const battingStr = p.batting_avg != null
+    ? `Avg: .${String(Math.round(p.batting_avg * 1000)).padStart(3,'0')} · ${p.plate_appearances} PA · `
+    : '';
+  document.getElementById('modalSub').textContent = `${battingStr}${p.division || '—'} · Group ${p.group_num || '?'}`;
+
+  // Check in button
+  const btnCheckin = document.getElementById('btnCheckin');
+  if (p.checked_in) {
+    btnCheckin.textContent = '✅ Checked In — Tap to Undo';
+    btnCheckin.className = 'btn-checkin in';
+  } else {
+    btnCheckin.textContent = '⬜ Mark as Checked In';
+    btnCheckin.className = 'btn-checkin out';
+  }
+
+  // Tryout type
+  document.querySelectorAll('.tryout-btn').forEach(b => {
+    b.className = 'tryout-btn';
+    if (b.dataset.type === p.tryout_type) {
+      if (p.tryout_type === 'allstars') b.classList.add('selected-allstars');
+      if (p.tryout_type === 'select9') b.classList.add('selected-select9');
+    }
+  });
+
+  // Toggles
+  const pitcherToggle = document.getElementById('togglePitcher');
+  const catcherToggle = document.getElementById('toggleCatcher');
+  if (p.wants_pitcher) pitcherToggle.classList.add('on'); else pitcherToggle.classList.remove('on');
+  if (p.wants_catcher) catcherToggle.classList.add('on'); else catcherToggle.classList.remove('on');
+
+  // Notes
+  renderNotes(p.notes || []);
+
+  document.getElementById('noteText').value = '';
+  document.getElementById('playerModal').style.display = 'flex';
+}
+
+function renderNotes(notes) {
+  const el = document.getElementById('notesList');
+  if (!notes || notes.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">No notes yet.</div>';
+    return;
+  }
+  el.innerHTML = notes.map(n => {
+    const d = new Date(n.created_at);
+    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `<div class="note-item">
+      <div class="note-meta"><strong>${n.coach}</strong> · ${time}</div>
+      <div class="note-text">${n.text}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+// Close modal
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('playerModal').style.display = 'none';
+  currentPlayerId = null;
+});
+document.getElementById('playerModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('playerModal')) {
+    document.getElementById('playerModal').style.display = 'none';
+    currentPlayerId = null;
+  }
+});
+
+// Check in toggle
+document.getElementById('btnCheckin').addEventListener('click', async () => {
+  const p = players.find(pl => pl.id === currentPlayerId);
+  if (!p) return;
+  await fetch(`/api/players/${p.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ checked_in: p.checked_in ? 0 : 1 })
+  });
+});
+
+// Tryout type buttons
+document.querySelectorAll('.tryout-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!currentPlayerId) return;
+    await fetch(`/api/players/${currentPlayerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tryout_type: btn.dataset.type })
+    });
+  });
+});
+
+// Toggle pitcher/catcher
+[document.getElementById('togglePitcher'), document.getElementById('toggleCatcher')].forEach(toggle => {
+  toggle.addEventListener('click', async () => {
+    if (!currentPlayerId) return;
+    const p = players.find(pl => pl.id === currentPlayerId);
+    if (!p) return;
+    const field = toggle.dataset.field;
+    const newVal = p[field] ? 0 : 1;
+    await fetch(`/api/players/${currentPlayerId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: newVal })
+    });
+  });
+});
+
+// Add note
+document.getElementById('btnAddNote').addEventListener('click', async () => {
+  const coach = coachNameEl.value.trim() || 'Coach';
+  const text = document.getElementById('noteText').value.trim();
+  if (!text || !currentPlayerId) return;
+  document.getElementById('btnAddNote').disabled = true;
+  await fetch(`/api/players/${currentPlayerId}/notes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ coach, text })
+  });
+  document.getElementById('noteText').value = '';
+  document.getElementById('btnAddNote').disabled = false;
+});
+
+// Enter key in note textarea
+document.getElementById('noteText').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    document.getElementById('btnAddNote').click();
+  }
+});
+
+// ── Add Player ────────────────────────────────────────────────────────────────
+document.getElementById('btnAddPlayer').addEventListener('click', () => {
+  document.getElementById('newName').value = '';
+  document.getElementById('newDivision').value = '';
+  document.getElementById('newGroup').value = '0';
+  document.getElementById('addPlayerModal').style.display = 'flex';
+});
+
+document.getElementById('addModalClose').addEventListener('click', () => {
+  document.getElementById('addPlayerModal').style.display = 'none';
+});
+document.getElementById('addPlayerModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('addPlayerModal'))
+    document.getElementById('addPlayerModal').style.display = 'none';
+});
+
+document.getElementById('btnSubmitPlayer').addEventListener('click', async () => {
+  const name = document.getElementById('newName').value.trim();
+  if (!name) { alert('Please enter a player name.'); return; }
+  await fetch('/api/players', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      division: document.getElementById('newDivision').value,
+      group_num: parseInt(document.getElementById('newGroup').value) || 0
+    })
+  });
+  document.getElementById('addPlayerModal').style.display = 'none';
+});
+</script>
+</body>
+</html>
