@@ -119,6 +119,13 @@
   }
   .btn-add:hover { background: var(--green-light); }
 
+  .btn-delete {
+    width: 100%; padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: 600;
+    background: none; color: var(--red); border: 1.5px solid var(--red); cursor: pointer;
+    margin-top: 4px; transition: all 0.15s;
+  }
+  .btn-delete:hover { background: #fdf0f0; }
+
   .btn-export {
     padding: 7px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
     background: var(--navy); color: var(--gold); border: 1.5px solid var(--gold);
@@ -413,6 +420,11 @@
         </div>
       </div>
 
+      <!-- Delete (manually added players only) -->
+      <div id="deleteSection" style="display:none;">
+        <button class="btn-delete" id="btnDelete">🗑 Remove this player</button>
+      </div>
+
       <!-- Notes -->
       <div>
         <div class="modal-section-label">Coaching Notes</div>
@@ -527,6 +539,13 @@ function connect() {
         p.notes.push(msg.note);
         if (currentPlayerId === msg.player_id) renderNotes(p.notes);
         renderAll();
+      }
+    } else if (msg.type === 'player_deleted') {
+      players = players.filter(p => p.id !== msg.player_id);
+      renderAll();
+      if (currentPlayerId === msg.player_id) {
+        document.getElementById('playerModal').style.display = 'none';
+        currentPlayerId = null;
       }
     } else if (msg.type === 'coaches_online') {
       document.getElementById('connText').textContent = `● Live · ${msg.count} coach${msg.count !== 1 ? 'es' : ''}`;
@@ -690,6 +709,9 @@ function openModal(playerId) {
   if (p.wants_pitcher) pitcherToggle.classList.add('on'); else pitcherToggle.classList.remove('on');
   if (p.wants_catcher) catcherToggle.classList.add('on'); else catcherToggle.classList.remove('on');
 
+  // Delete button — only visible for manually added players
+  document.getElementById('deleteSection').style.display = p.manually_added ? 'block' : 'none';
+
   // Notes
   renderNotes(p.notes || []);
 
@@ -785,6 +807,14 @@ document.getElementById('noteText').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
     document.getElementById('btnAddNote').click();
   }
+});
+
+// Delete player
+document.getElementById('btnDelete').addEventListener('click', async () => {
+  if (!currentPlayerId) return;
+  const p = players.find(pl => pl.id === currentPlayerId);
+  if (!p || !confirm(`Remove "${p.name}" from the list?`)) return;
+  await fetch(`/api/players/${currentPlayerId}`, { method: 'DELETE' });
 });
 
 // ── Add Player ────────────────────────────────────────────────────────────────

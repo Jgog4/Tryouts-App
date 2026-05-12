@@ -184,11 +184,23 @@ app.post('/api/players', (req, res) => {
     wants_catcher: false,
     wants_pitcher: false,
     notes: [],
+    manually_added: true,
   };
   db.players.push(player);
   saveDb();
   broadcast({ type: 'player_added', player });
   res.json(player);
+});
+
+// DELETE manually added player
+app.delete('/api/players/:id', (req, res) => {
+  const idx = db.players.findIndex(p => p.id === parseInt(req.params.id));
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  if (!db.players[idx].manually_added) return res.status(403).json({ error: 'Can only delete manually added players' });
+  db.players.splice(idx, 1);
+  saveDb();
+  broadcast({ type: 'player_deleted', player_id: parseInt(req.params.id) });
+  res.json({ ok: true });
 });
 
 // POST note for player
