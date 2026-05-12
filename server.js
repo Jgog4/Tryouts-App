@@ -118,6 +118,41 @@ app.get('/api/players', (req, res) => {
   res.json(db.players);
 });
 
+// GET export as CSV
+app.get('/api/export.csv', (req, res) => {
+  const escape = (val) => {
+    if (val === null || val === undefined) return '';
+    const str = String(val);
+    return str.includes(',') || str.includes('"') || str.includes('\n')
+      ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const headers = ['Name','Division','Group','Batting Avg','Plate Appearances','Checked In','Tryout Type','Pitcher','Catcher','Notes'];
+  const rows = db.players.map(p => {
+    const notesText = (p.notes || [])
+      .map(n => `[${n.coach} ${new Date(n.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}] ${n.text}`)
+      .join(' | ');
+    return [
+      escape(p.name),
+      escape(p.division),
+      escape(p.group_num || ''),
+      escape(p.batting_avg != null ? p.batting_avg.toFixed(3) : ''),
+      escape(p.plate_appearances),
+      escape(p.checked_in ? 'Yes' : 'No'),
+      escape(p.tryout_type === 'allstars' ? 'All Stars' : p.tryout_type === 'select9' ? 'Select 9 Only' : ''),
+      escape(p.wants_pitcher ? 'Yes' : 'No'),
+      escape(p.wants_catcher ? 'Yes' : 'No'),
+      escape(notesText),
+    ].join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const filename = `tryouts-${new Date().toISOString().slice(0,10)}.csv`;
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(csv);
+});
+
 // PATCH player (check_in, tryout_type, wants_catcher, wants_pitcher, name, division, group_num)
 app.patch('/api/players/:id', (req, res) => {
   const p = findPlayer(req.params.id);
